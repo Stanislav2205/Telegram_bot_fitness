@@ -15,6 +15,13 @@ from app.db.models import User, Campaign, Referral, Ticket, DrawResult, AuditLog
 from app.db.session import build_engine
 
 
+def _strip_tz(value):
+    """Убирает timezone из datetime, чтобы Excel мог записать дату."""
+    if value is not None and hasattr(value, 'tzinfo') and value.tzinfo is not None:
+        return value.replace(tzinfo=None)
+    return value
+
+
 async def export_data_to_excel(output_dir="exports"):
     """
     Экспортирует все данные из базы данных в Excel файлы
@@ -44,7 +51,7 @@ async def export_data_to_excel(output_dir="exports"):
                     'age': user.age,
                     'favorite_sport': user.favorite_sport,
                     'is_blocked': user.is_blocked,
-                    'created_at': user.created_at
+                    'created_at': _strip_tz(user.created_at)
                 }
                 users_list.append(user_dict)
             
@@ -61,12 +68,12 @@ async def export_data_to_excel(output_dir="exports"):
                 campaign_dict = {
                     'id': campaign.id,
                     'title': campaign.title,
-                    'starts_at': campaign.starts_at,
-                    'ends_at': campaign.ends_at,
+                    'starts_at': _strip_tz(campaign.starts_at),
+                    'ends_at': _strip_tz(campaign.ends_at),
                     'status': campaign.status.value if hasattr(campaign.status, 'value') else campaign.status,
                     'top_k': campaign.top_k,
                     'min_days_subscribed': campaign.min_days_subscribed,
-                    'created_at': campaign.created_at
+                    'created_at': _strip_tz(campaign.created_at)
                 }
                 campaigns_list.append(campaign_dict)
             
@@ -86,8 +93,8 @@ async def export_data_to_excel(output_dir="exports"):
                     'invitee_id': referral.invitee_id,
                     'campaign_id': referral.campaign_id,
                     'status': referral.status.value if hasattr(referral.status, 'value') else referral.status,
-                    'verified_at': referral.verified_at,
-                    'created_at': referral.created_at
+                    'verified_at': _strip_tz(referral.verified_at),
+                    'created_at': _strip_tz(referral.created_at)
                 }
                 referrals_list.append(referral_dict)
             
@@ -109,7 +116,7 @@ async def export_data_to_excel(output_dir="exports"):
                     'reason': ticket.reason,
                     'source_referral_id': ticket.source_referral_id,
                     'idempotency_key': ticket.idempotency_key,
-                    'created_at': ticket.created_at
+                    'created_at': _strip_tz(ticket.created_at)
                 }
                 tickets_list.append(ticket_dict)
             
@@ -128,7 +135,7 @@ async def export_data_to_excel(output_dir="exports"):
                     'campaign_id': draw_result.campaign_id,
                     'winner_user_id': draw_result.winner_user_id,
                     'seed_info': draw_result.seed_info,
-                    'drawn_at': draw_result.drawn_at
+                    'drawn_at': _strip_tz(draw_result.drawn_at)
                 }
                 draw_results_list.append(draw_result_dict)
             
@@ -148,7 +155,7 @@ async def export_data_to_excel(output_dir="exports"):
                     'actor_user_id': log.actor_user_id,
                     'target_id': log.target_id,
                     'details': log.details,
-                    'created_at': log.created_at
+                    'created_at': _strip_tz(log.created_at)
                 }
                 audit_logs_list.append(log_dict)
             
@@ -385,7 +392,7 @@ async def export_statistics():
                         'age': user.age,
                         'favorite_sport': user.favorite_sport,
                         'is_blocked': user.is_blocked,
-                        'created_at': user.created_at
+                        'created_at': _strip_tz(user.created_at)
                     }
                     users_list.append(user_dict)
                 
